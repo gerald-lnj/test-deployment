@@ -9,7 +9,7 @@ on:
         default: 'dev'
         type: choice
         options:
-          - dev
+          - sandbox
           - prod
 
   push:
@@ -17,6 +17,7 @@ on:
       - "*.md"
     branches:
       - main
+      - develop
     tags:
       - '*'
 
@@ -42,11 +43,11 @@ jobs:
       name: ${{ github.event.inputs.environment || ((github.ref_type == 'tag') && 'prod') || 'dev' }}
 
     steps:
-      - name: Add deploy key to ssh-agent
-        uses: webfactory/ssh-agent@v0.5.4
-        with:
-          ssh-private-key: |
-            ${{ secrets.RI_IAM_SECRET_KEY }}
+      # - name: Add deploy key to ssh-agent
+      #   uses: webfactory/ssh-agent@v0.5.4
+      #   with:
+      #     ssh-private-key: |
+      #       ${{ secrets.RI_IAM_SECRET_KEY }}
 
       - name: Check out
         uses: actions/checkout@v2
@@ -70,34 +71,32 @@ jobs:
           aws-region: ap-southeast-1
           # Can you imagine situation where a private repo have more than two accounts? Microsoft apparently can't -_-
           # Environment secret for private repo not supported by GitHub. Manual `if` for now.
-          role-to-assume: ${{ ((env.environment == 'prod') && secrets.OIDC_ROLE_ARN_PROD) || secrets.OIDC_ROLE_ARN_DEV }}
-
-      - name: Create Sentry release
-        uses: getsentry/action-release@v1
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-        with:
-          environment: ${{ env.environment }}
-          version: ${{ env.version }}
+          
+          # role-to-assume: ${{ ((env.environment == 'prod') && secrets.OIDC_ROLE_ARN_PROD) || secrets.OIDC_ROLE_ARN_DEV }}
+          role-to-assume: arn:aws:iam::410801124909:role/GithubOIDCVanguardTDXRole
+      
+      # We don't really enforce versioning on TD repos so far, perhaps we should look into that
+      # - name: Create Sentry release
+      #   uses: getsentry/action-release@v1
+      #   env:
+      #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      #     SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      #     SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      #   with:
+      #     environment: ${{ env.environment }}
+      #     version: ${{ env.version }}
 
       - name: Deploy
-        run: |
-          npx sst deploy --stage ${{ env.environment }} vpc-stack
-          npx sst deploy --stage ${{ env.environment }} iam-shared-stack
-          npx sst deploy --stage ${{ env.environment }} iam-helper-stack
-          npx sst deploy --stage ${{ env.environment }} iam-storage-stack
-          npx sst deploy --stage ${{ env.environment }} iam-neptune-query-stack
-          npx sst deploy --stage ${{ env.environment }} iam-stepfunction-stack
-
-      - name: Finalize Sentry release
-        uses: getsentry/action-release@v1
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-        with:
-          environment: ${{ env.environment }}
-          version: ${{ env.version }}
-          finalize: true
+        run: npx sst deploy --stage ${{ env.environment }}
+      
+      # See above on sentry
+      # - name: Finalize Sentry release
+      #   uses: getsentry/action-release@v1
+      #   env:
+      #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      #     SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      #     SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      #   with:
+      #     environment: ${{ env.environment }}
+      #     version: ${{ env.version }}
+      #     finalize: true
