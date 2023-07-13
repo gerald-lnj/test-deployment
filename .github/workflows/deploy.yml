@@ -24,6 +24,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    container: node:16-buster-slim
 
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#concurrency
     # Ideally, we want to cancel existing jobs if a new one is triggered, but cancelling `sst deploy` cause the subsequent execution to fail.
@@ -55,11 +56,6 @@ jobs:
       - name: Update submodules
         run: |
           git submodule update --init --recursive
-
-      - name: Setup node
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
 
       - name: Install npm dependencies
         run: npm install
