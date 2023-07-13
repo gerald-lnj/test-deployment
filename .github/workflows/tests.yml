@@ -1,0 +1,74 @@
+name: Test
+
+on:
+  push:
+    paths-ignore:
+      - "*.md"
+    branches:
+      - main
+
+  pull_request:
+    paths-ignore:
+      - "*.md"
+    branches:
+      - '**'
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+
+    services:
+      postgres:
+        image: postgres:12.12
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_USER: root
+          POSTGRES_DB: horangi
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Add deploy key to ssh-agent
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: |
+            ${{ secrets.RI_IAM_SECRET_KEY }}
+
+      - name: Check out
+        uses: actions/checkout@v2
+
+      - name: Update submodules
+        run: |
+          git submodule update --init --recursive
+
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install pipenv
+        run: |
+          python -m pip install --upgrade pipenv wheel
+
+#      - id: cache-pipenv
+#        uses: actions/cache@v1
+#        with:
+#          path: ~/.local/share/virtualenvs
+#          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+
+      - name: Install dependencies
+#        if: steps.cache-pipenv.outputs.cache-hit != 'true'
+        working-directory: src
+        run: pipenv install --deploy --dev
+
+      - name: Run test
+        working-directory: src
+        run: pipenv run npm test
