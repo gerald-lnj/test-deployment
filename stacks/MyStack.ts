@@ -1,7 +1,7 @@
 import { StackContext, Api, EventBus } from "sst/constructs";
 
 export function API({ stack }: StackContext) {
-  const bus = new EventBus(stack, "bus", {
+  const bus = new EventBus(stack, "dsadsa", {
     defaults: {
       retries: 10,
     },
