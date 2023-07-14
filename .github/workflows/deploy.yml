@@ -53,10 +53,6 @@ jobs:
       - name: Check out
         uses: actions/checkout@v3
 
-      - name: Update submodules
-        run: |
-          git submodule update --init --recursive
-
       - name: Install npm dependencies
         run: npm install
 
