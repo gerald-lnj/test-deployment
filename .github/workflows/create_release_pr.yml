@@ -36,14 +36,14 @@ jobs:
       PNPM_VERSION: '8.6.12'
 
     steps:
-      - name: Generate `AWS_CDK_STACKS_EXPRESSION` environment variable using the env
-        if: ${{env.AWS_CDK_STACKS != null}}
-        run: >
-          Mode="$(echo $ENVIRONMENT_MODE | awk '{print toupper(substr($0,1,1)) substr($0,2)}')";
-          Id="$(echo $ENVIRONMENT_ID | awk '{print toupper(substr($0,1,1)) substr($0,2)}')";
-          StackPrefix=$Mode$Id;
-          AwsCdkStacks=($AWS_CDK_STACKS);
-          echo "AWS_CDK_STACKS_EXPRESSION=`echo ${AwsCdkStacks[@]/#/$StackPrefix}`" >> $GITHUB_ENV;
+      # - name: Generate `AWS_CDK_STACKS_EXPRESSION` environment variable using the env
+      #   if: ${{env.AWS_CDK_STACKS != null}}
+      #   run: >
+      #     Mode="$(echo $ENVIRONMENT_MODE | awk '{print toupper(substr($0,1,1)) substr($0,2)}')";
+      #     Id="$(echo $ENVIRONMENT_ID | awk '{print toupper(substr($0,1,1)) substr($0,2)}')";
+      #     StackPrefix=$Mode$Id;
+      #     AwsCdkStacks=($AWS_CDK_STACKS);
+      #     echo "AWS_CDK_STACKS_EXPRESSION=`echo ${AwsCdkStacks[@]/#/$StackPrefix}`" >> $GITHUB_ENV;
 
       # - name: Configure AWS Credentials
       #   uses: aws-actions/configure-aws-credentials@v4
