@@ -51,4 +51,4 @@ jobs:
       - name: CDK Deploy
         # working-directory: ./aaaaaaa
         # run: npx cdk deploy --require-approval never --context environmentMode=${{env.ENVIRONMENT_MODE}} --context environmentId=${{ env.ENVIRONMENT_ID }}
-        run: cd aaaaaaa && npx cdk --version
+        run: cd aaaaaaa && npx cdk@latest --version
