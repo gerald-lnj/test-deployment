@@ -21,8 +21,8 @@ jobs:
       contents: read
 
     environment:
-      name: ${{ format('{0}{1}', github.ref_name == 'main' && 'Dev' || github.ref_name == 'release/candidate' && 'Stage' || startsWith(github.ref_name, 'qa') && 'Qa' || startsWith(github.ref_name, 'prod') && 'Prod', github.ref_name == 'qa-it' && 'It' || github.ref_name == 'prod-sf' && 'Sf' || (github.ref_name == 'main' || github.ref_name == 'release/candidate' || github.ref_name == 'prod-us1') && 'Us1' || github.ref_name == 'prod-eu1' && 'Eu1' || github.ref_name == 'prod-ap1' && 'Ap1') }}
-    
+      name: ${{ github.ref_name }}
+
     env:
       AWS_CDK_STACKS: null
       AWS_CDK_STACKS_IGNORE_DEPENDENCY: false
