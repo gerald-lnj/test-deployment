@@ -49,6 +49,6 @@ jobs:
           # ssh-key: ${{ secrets.SUBMODULE_SYNC_SSH_KEY }}
       
       - name: CDK Deploy
-        working-directory: ./aaaaaaa
+        # working-directory: ./aaaaaaa
         # run: npx cdk deploy --require-approval never --context environmentMode=${{env.ENVIRONMENT_MODE}} --context environmentId=${{ env.ENVIRONMENT_ID }}
-        run: npx cdk --version
+        run: cd aaaaaaa && npx cdk --version
