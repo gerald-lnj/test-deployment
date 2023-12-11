@@ -1,24 +1,12 @@
 {
-  "name": "my-sst-app",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
+  "name": "test-deployment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "dev": "sst dev",
-    "build": "sst build",
-    "deploy": "sst deploy",
-    "remove": "sst remove",
-    "console": "sst console",
-    "typecheck": "tsc --noEmit"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "devDependencies": {
-    "@tsconfig/node16": "^16.1.0",
-    "aws-cdk-lib": "2.84.0",
-    "constructs": "10.1.156",
-    "sst": "^2.21.1",
-    "typescript": "^5.1.6"
-  },
-  "workspaces": [
-    "packages/*"
-  ]
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
