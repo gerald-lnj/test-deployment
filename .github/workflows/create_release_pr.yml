@@ -35,8 +35,20 @@ jobs:
       PNPM_VERSION: '8.6.12'
 
     steps:
+      # - name: Configure AWS Credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-region: ${{ env.AWS_REGION }}
+      #     role-to-assume: ${{ env.AWS_OIDC_ROLE_ARN }}
+      #     output-credentials: true
+
       - name: Check out
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+          # TODO: Separate the account used for checking out the submodules
+          # once we have a less privileged account
+          # ssh-key: ${{ secrets.SUBMODULE_SYNC_SSH_KEY }}
 
       - name: Setup node
         uses: actions/setup-node@v3
@@ -51,6 +63,6 @@ jobs:
       # - name: Build
       #   run: pnpm build --mode $environment_mode$environment_id
 
-      - name: Deploy
+      - name: CDK Deploy
         working-directory: ./cdk
         run: npx cdk deploy --require-approval never --context environmentMode=${{env.ENVIRONMENT_MODE}} --context environmentId=${{ env.ENVIRONMENT_ID }}
