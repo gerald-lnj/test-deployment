@@ -7,18 +7,12 @@ on:
     branches:
       - main
 
-env:
-  environment_mode: ${{ github.ref_name == 'main' && 'Dev' || github.ref_name == 'release/candidate' && 'Stage' || startsWith(github.ref_name, 'qa') && 'Qa' || startsWith(github.ref_name, 'prod') && 'Prod'}}
-  # would be nice if we could `ref_name.split('-')[-1].upper()`
-  environment_id: ${{ github.ref_name == 'qa-it' && 'It' || github.ref_name == 'prod-sf' && 'Sf' || (github.ref_name == 'main' || github.ref_name == 'release/candidate' || github.ref_name == 'prod-us1') && 'Us1' || github.ref_name == 'prod-eu1' && 'Eu1' || github.ref_name == 'prod-ap1' && 'Ap1'}}
-  version: ${{ github.sha }}
-
 jobs:
-  deploy:
+  cdk_deploy:
     runs-on: ubuntu-latest
 
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#concurrency
-    concurrency: ${{ format('{0}{1}', github.ref_name == 'main' && 'Dev' || startsWith(github.ref_name, 'qa') && 'Qa' || startsWith(github.ref_name, 'prod') && 'Prod', github.ref_name == 'qa-it' && 'It' || github.ref_name == 'prod-sf' && 'Sf' || (github.ref_name == 'main' || github.ref_name == 'prod-us1') && 'Us1' || github.ref_name == 'prod-eu1' && 'Eu1' || github.ref_name == 'prod-ap1' && 'Ap1') }}
+    concurrency: ${{ github.ref_name }}
 
     # These permissions are needed to interact with GitHub's OIDC Token endpoint.
     # see https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
@@ -28,6 +22,17 @@ jobs:
 
     environment:
       name: ${{ format('{0}{1}', github.ref_name == 'main' && 'Dev' || github.ref_name == 'release/candidate' && 'Stage' || startsWith(github.ref_name, 'qa') && 'Qa' || startsWith(github.ref_name, 'prod') && 'Prod', github.ref_name == 'qa-it' && 'It' || github.ref_name == 'prod-sf' && 'Sf' || (github.ref_name == 'main' || github.ref_name == 'release/candidate' || github.ref_name == 'prod-us1') && 'Us1' || github.ref_name == 'prod-eu1' && 'Eu1' || github.ref_name == 'prod-ap1' && 'Ap1') }}
+    
+    env:
+      AWS_CDK_STACKS: null
+      AWS_CDK_STACKS_IGNORE_DEPENDENCY: false
+      AWS_CDK_STACKS_EXPRESSION: --all
+      AWS_OIDC_ROLE_ARN: ${{ (github.ref_name == 'main' || github.ref_name == 'develop') && 'arn:aws:iam::014762482633:role/GitHubAction-AssumeRoleWithAction' || github.ref_name == 'staging' && 'arn:aws:iam::653191715649:role/GitHubAction-AssumeRoleWithAction' || github.ref_name == 'prod-sf' && 'arn:aws:iam::860524536695:role/GitHubAction-AssumeRoleWithAction' || github.ref_name == 'prod-us1' && 'arn:aws:iam::659495092903:role/GitHubAction-AssumeRoleWithAction' || github.ref_name == 'prod-eu1' && 'arn:aws:iam::706927682327:role/GitHubAction-AssumeRoleWithAction' }}
+      AWS_REGION: ${{ (github.ref_name == 'main' || github.ref_name == 'develop') && 'us-east-1' || github.ref_name == 'staging' && 'us-east-1' || github.ref_name == 'prod-sf' && 'eu-west-1' || github.ref_name == 'prod-us1' && 'us-east-1' || github.ref_name == 'prod-eu1' && 'eu-central-1' }}
+      ENVIRONMENT_MODE: ${{ (github.ref_name == 'main' || github.ref_name == 'develop') && 'dev' || github.ref_name == 'staging' && 'stage' || (github.ref_name == 'prod-sf' || github.ref_name == 'prod-us1' || github.ref_name == 'prod-eu1') && 'prod' }}
+      ENVIRONMENT_ID: ${{ (github.ref_name == 'main' || github.ref_name == 'develop') && 'us1' || github.ref_name == 'staging' && 'us1' || github.ref_name == 'prod-sf' && 'sf' || github.ref_name == 'prod-us1' && 'us1' || github.ref_name == 'prod-eu1' && 'eu1' }}
+      NODE_VERSION: '18.17.1'
+      PNPM_VERSION: '8.6.12'
 
     steps:
       - name: Check out
@@ -47,4 +52,4 @@ jobs:
       #   run: pnpm build --mode $environment_mode$environment_id
 
       - name: Deploy
-        run: cd cdk && ENVIRONMENT_MODE=$environment_mode ENVIRONMENT_ID=$environment_id npx cdk deploy --require-approval never
+        run: cd cdk && ENVIRONMENT_MODE=$ENVIRONMENT_MODE ENVIRONMENT_ID=$ENVIRONMENT_ID npx cdk deploy --require-approval never
