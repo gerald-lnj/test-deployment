@@ -50,15 +50,15 @@ jobs:
           # once we have a less privileged account
           # ssh-key: ${{ secrets.SUBMODULE_SYNC_SSH_KEY }}
 
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18.17.1'
-
       - uses: pnpm/action-setup@v2
         with:
           version: '8.6.12'
           run_install: true
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.17.1'
 
       # - name: Build
       #   run: pnpm build --mode $environment_mode$environment_id
