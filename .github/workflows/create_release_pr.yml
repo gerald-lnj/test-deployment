@@ -36,6 +36,13 @@ jobs:
       PNPM_VERSION: '8.6.12'
 
     steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+          # TODO: Separate the account used for checking out the submodules
+          # once we have a less privileged account
+          # ssh-key: ${{ secrets.SUBMODULE_SYNC_SSH_KEY }}
       - name: CDK Deploy
         working-directory: ./aaaaaaa
         run: npx cdk deploy --require-approval never --context environmentMode=${{env.ENVIRONMENT_MODE}} --context environmentId=${{ env.ENVIRONMENT_ID }}
