@@ -2,12 +2,12 @@
 .DS_Store
 
 # Code
-node_modules
+*/node_modules
 
 # Envs
 .env.local
 
-cdk/cdk.out
+*/cdk.out
 
 *.js
 !jest.config.js
