@@ -74,8 +74,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build
-        run: pnpm build --mode ${{env.ENVIRONMENT_MODE}}.${{env.ENVIRONMENT_ID}}
+      # - name: Build
+      #   run: pnpm build --mode ${{env.ENVIRONMENT_MODE}}.${{env.ENVIRONMENT_ID}}
 
       - name: CDK Deploy
         working-directory: ./cdk
