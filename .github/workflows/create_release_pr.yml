@@ -69,7 +69,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{env.NODE_VERSION}}
-          cache: 'pnpm'
+          # cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -78,5 +78,5 @@ jobs:
       #   run: pnpm build --mode ${{env.ENVIRONMENT_MODE}}.${{env.ENVIRONMENT_ID}}
 
       - name: CDK Deploy
-        working-directory: ./cdk
+        working-directory: cdk
         run: npx cdk deploy --require-approval never --context environmentMode=${{env.ENVIRONMENT_MODE}} --context environmentId=${{ env.ENVIRONMENT_ID }}
