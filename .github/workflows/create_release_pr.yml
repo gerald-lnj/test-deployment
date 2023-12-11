@@ -1,0 +1,82 @@
+name: Deploy
+
+on:
+  workflow_dispatch
+
+permissions:
+  contents: write
+  pull-requests: write
+
+
+jobs:
+  cdk_deploy:
+    runs-on: ubuntu-latest
+
+    # # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#concurrency
+    # concurrency: ${{ github.ref_name }}
+
+    # These permissions are needed to interact with GitHub's OIDC Token endpoint.
+    # see https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+    permissions:
+      id-token: write
+      contents: read
+
+    environment:
+      name: ${{ github.ref_name }}
+
+    env:
+      AWS_CDK_STACKS: null
+      AWS_CDK_STACKS_IGNORE_DEPENDENCY: false
+      AWS_CDK_STACKS_EXPRESSION: --all
+      AWS_OIDC_ROLE_ARN: test-role-arn
+      AWS_REGION: test-region
+      ENVIRONMENT_MODE: test-mode
+      ENVIRONMENT_ID: test-id
+      NODE_VERSION: '18.17.1'
+      PNPM_VERSION: '8.6.12'
+
+    steps:
+      - name: Generate `AWS_CDK_STACKS_EXPRESSION` environment variable using the env
+        if: ${{env.AWS_CDK_STACKS != null}}
+        run: >
+          Mode="$(echo $ENVIRONMENT_MODE | awk '{print toupper(substr($0,1,1)) substr($0,2)}')";
+          Id="$(echo $ENVIRONMENT_ID | awk '{print toupper(substr($0,1,1)) substr($0,2)}')";
+          StackPrefix=$Mode$Id;
+          AwsCdkStacks=($AWS_CDK_STACKS);
+          echo "AWS_CDK_STACKS_EXPRESSION=`echo ${AwsCdkStacks[@]/#/$StackPrefix}`" >> $GITHUB_ENV;
+
+      # - name: Configure AWS Credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-region: ${{ env.AWS_REGION }}
+      #     role-to-assume: ${{ env.AWS_OIDC_ROLE_ARN }}
+      #     output-credentials: true
+
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+          # TODO: Separate the account used for checking out the submodules
+          # once we have a less privileged account
+          # ssh-key: ${{ secrets.SUBMODULE_SYNC_SSH_KEY }}
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: ${{env.PNPM_VERSION}}
+          run_install: false
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{env.NODE_VERSION}}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm build --mode ${{env.ENVIRONMENT_MODE}}.${{env.ENVIRONMENT_ID}}
+
+      - name: CDK Deploy
+        working-directory: ./cdk
+        run: npx cdk deploy --require-approval never --context environmentMode=${{env.ENVIRONMENT_MODE}} --context environmentId=${{ env.ENVIRONMENT_ID }}
