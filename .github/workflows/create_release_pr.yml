@@ -52,4 +52,5 @@ jobs:
       #   run: pnpm build --mode $environment_mode$environment_id
 
       - name: Deploy
-        run: cd cdk && ENVIRONMENT_MODE=$ENVIRONMENT_MODE ENVIRONMENT_ID=$ENVIRONMENT_ID npx cdk deploy --require-approval never
+        working-directory: ./cdk
+        run: npx cdk deploy --require-approval never --context environmentMode=${{env.ENVIRONMENT_MODE}} --context environmentId=${{ env.ENVIRONMENT_ID }}
