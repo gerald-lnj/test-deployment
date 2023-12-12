@@ -6,6 +6,8 @@ on:
       - '*.md'
     branches:
       - main
+      - prod-us1
+      - prod-eu1
 
 jobs:
   cdk_deploy:
